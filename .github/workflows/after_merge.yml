@@ -29,10 +29,9 @@ jobs:
           java-version: 11
 
       - name: Assemble
-        uses: gradle/gradle-build-action@v1
+        uses: gradle/gradle-build-action@v2
         with:
           arguments: assembleRelease
-          dependencies-cache-enabled: true
 
       - name: Unwrap GPG key
         env:
@@ -51,10 +50,9 @@ jobs:
         run: ./gradlew publishReleasePublicationToGithubRepository | true
 
       - name: Coverage
-        uses: gradle/gradle-build-action@v1
+        uses: gradle/gradle-build-action@v2
         with:
           arguments: projectCoverage
-          dependencies-cache-enabled: true
 
       - uses: codecov/codecov-action@v2
         with:
