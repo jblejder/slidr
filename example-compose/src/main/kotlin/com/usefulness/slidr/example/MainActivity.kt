@@ -6,7 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
 import androidx.navigation.navArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -19,7 +21,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme(darkColorScheme()) {
+            MaterialTheme(lightColorScheme()) {
                 val navController = rememberAnimatedNavController()
                 AnimatedNavHost(navController = navController, startDestination = "list") {
                     composable("list") { ListView(navController) }
