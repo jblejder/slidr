@@ -72,7 +72,6 @@ internal fun ListView(navController: NavHostController) {
     )
 }
 
-
 @OptIn(ExperimentalSerializationApi::class)
 internal fun loadData(resources: Resources) =
     resources.openRawResource(R.raw.android_versions)
