@@ -3,6 +3,7 @@ package com.usefulness.slidr.example
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -20,7 +21,7 @@ import androidx.navigation.compose.rememberNavController
 @Preview
 @Composable
 private fun Dupa() {
-    DetailsView(rememberNavController(), 23)
+    DetailsView(rememberNavController(), 15)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,7 +33,11 @@ internal fun DetailsView(navController: NavHostController, sdkInt: Int) {
     Scaffold(
         topBar = { SmallTopAppBar(title = { Text(text = item.name.orEmpty()) }) },
         content = { padding ->
-            Column {
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            ) {
                 Text(
                     text = item.name.orEmpty(),
                     style = MaterialTheme.typography.titleMedium,

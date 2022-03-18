@@ -49,9 +49,7 @@ internal fun ListView(navController: NavHostController) {
                     items(listContent) { item ->
                         Column(
                             modifier = Modifier
-                                .clickable {
-                                    navController.navigate("details/${item.sdkInt}")
-                                }
+                                .clickable { navController.navigate("details/${item.sdkInt}") }
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
                             content = {
                                 Text(
