@@ -17,7 +17,12 @@
 package com.usefulness.slidr.example
 
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.with
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -63,7 +68,7 @@ import androidx.navigation.get
  * @param builder the builder used to construct the graph
  */
 @Composable
-public fun SlidableNavHost(
+fun SlidableNavHost(
     navController: NavHostController,
     startDestination: String,
     modifier: Modifier = Modifier,
@@ -71,11 +76,11 @@ public fun SlidableNavHost(
     builder: NavGraphBuilder.() -> Unit,
 ) {
     SlidableNavHost(
-        navController,
-        remember(route, startDestination, builder) {
+        navController = navController,
+        graph = remember(route, startDestination, builder) {
             navController.createGraph(startDestination, route, builder)
         },
-        modifier,
+        modifier = modifier,
     )
 }
 
@@ -92,8 +97,9 @@ public fun SlidableNavHost(
  * @param graph the graph for this host
  * @param modifier The modifier to be applied to the layout.
  */
+@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
-public fun SlidableNavHost(
+fun SlidableNavHost(
     navController: NavHostController,
     graph: NavGraph,
     modifier: Modifier = Modifier,
@@ -125,8 +131,6 @@ public fun SlidableNavHost(
 
     val saveableStateHolder = rememberSaveableStateHolder()
 
-    // Find the ComposeNavigator, returning early if it isn't found
-    // (such as is the case when using TestNavHostController)
     val composeNavigator =
         navController.navigatorProvider.get<Navigator<out NavDestination>>(SlidableComposeNavigator.NAME) as? SlidableComposeNavigator
             ?: return
@@ -141,19 +145,30 @@ public fun SlidableNavHost(
 
     var initialCrossfade by remember { mutableStateOf(true) }
     if (backStackEntry != null) {
-        // while in the scope of the composable, we provide the navBackStackEntry as the
-        // ViewModelStoreOwner and LifecycleOwner
-        Crossfade(backStackEntry.id, modifier) {
-            val lastEntry = transitionsInProgress.lastOrNull { entry ->
-                it == entry.id
-            } ?: backStack.lastOrNull { entry ->
-                it == entry.id
+        val animationOrNoAnimation: @Composable (@Composable (String) -> Unit) -> Unit = { Content ->
+            if (false) { // TODO:
+                AnimatedContent(
+                    targetState = backStackEntry.id,
+                    modifier = modifier,
+                    transitionSpec = { EnterTransition.None with ExitTransition.None },
+                ) { target ->
+                    Content(target)
+                }
+            } else {
+                Crossfade(backStackEntry.id, modifier) { target ->
+                    Content(target)
+                }
             }
+        }
+        animationOrNoAnimation { target ->
+            val lastEntry = transitionsInProgress.lastOrNull { entry -> target == entry.id }
+                ?: backStack.lastOrNull { entry -> target == entry.id }
             val lastThingOnBackstack = backStack.dropLast(1).firstOrNull()
 
-            NavContainer(
+            SlidableContainer(
+                enabled = lastThingOnBackstack != null,
                 background = {
-                    lastThingOnBackstack?.let {
+                    lastThingOnBackstack?.LocalOwnersProvider(saveableStateHolder) {
                         (lastThingOnBackstack.destination as SlidableComposeNavigator.Destination).content(lastThingOnBackstack)
                     }
                 },
@@ -162,8 +177,7 @@ public fun SlidableNavHost(
                         (lastEntry.destination as SlidableComposeNavigator.Destination).content(lastEntry)
                     }
                 },
-                enabled = lastThingOnBackstack != null,
-                onDismissed = { navController.popBackStack() },
+                onDismiss = navController::popBackStack,
             )
 
             DisposableEffect(lastEntry) {
@@ -188,39 +202,6 @@ public fun SlidableNavHost(
 
     // Show any dialog destinations
     DialogHost(dialogNavigator)
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-private fun NavContainer(
-    background: @Composable () -> Unit,
-    foreground: @Composable () -> Unit,
-    enabled: Boolean,
-    onDismissed: () -> Boolean,
-) {
-//    val dismissState = rememberDismissState(
-//        confirmStateChange = {
-//            when (it) {
-//                DismissValue.Default -> false
-//                DismissValue.DismissedToEnd,
-//                DismissValue.DismissedToStart,
-//                -> onDismissed()
-//            }
-//        },
-//    )
-//    SwipeToDismiss(
-//        state = if (enabled) DismissState(initialValue = DismissValue.Default) else dismissState,
-//        directions = setOf(DismissDirection.StartToEnd),
-//        dismissThresholds = { FractionalThreshold(0.7f) },
-//        background = background,
-//        dismissContent = foreground,
-//    )
-    SlidableContainer(
-        enabled = enabled,
-        background = background,
-        foreground = foreground,
-        onDismissed = onDismissed
-    )
 }
 
 @Composable
