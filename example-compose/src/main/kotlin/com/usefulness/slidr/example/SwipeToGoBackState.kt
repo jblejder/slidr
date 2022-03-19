@@ -77,7 +77,9 @@ fun SlidableContainer(
         ),
     ) {
         if (enabled && swipeableState.offset.value.absoluteValue > 0) {
-            background()
+            Box {
+                background()
+            }
         }
         Box(
             modifier = Modifier.offset {

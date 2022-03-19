@@ -16,6 +16,7 @@
 
 package com.usefulness.slidr.example
 
+import android.util.Log
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
@@ -143,21 +144,29 @@ fun SlidableNavHost(
 
     val backStackEntry = visibleTransitionsInProgress.lastOrNull() ?: visibleBackStack.lastOrNull()
 
+    val backstackSize = backStack.size
+    backStack.takeLast(2).forEachIndexed { index, entry ->
+        SlidableContainer(
+            enabled = index > 0,
+            background = {
+// chuja nie background
+            },
+            foreground = {
+                entry?.LocalOwnersProvider(saveableStateHolder) {
+                    Log.d("jakub", "SlidableNavHost: ${entry.id} - ${entry.destination.route}")
+                    (entry.destination as SlidableComposeNavigator.Destination).content(entry)
+                }
+            },
+            onDismiss = navController::popBackStack,
+        )
+    }
+
     var initialCrossfade by remember { mutableStateOf(true) }
     if (backStackEntry != null) {
+        navController.backQueue
         val animationOrNoAnimation: @Composable (@Composable (String) -> Unit) -> Unit = { Content ->
-            if (false) { // TODO:
-                AnimatedContent(
-                    targetState = backStackEntry.id,
-                    modifier = modifier,
-                    transitionSpec = { EnterTransition.None with ExitTransition.None },
-                ) { target ->
-                    Content(target)
-                }
-            } else {
-                Crossfade(backStackEntry.id, modifier) { target ->
-                    Content(target)
-                }
+            Crossfade(backStackEntry.id, modifier) { target ->
+                Content(target)
             }
         }
         animationOrNoAnimation { target ->
@@ -165,20 +174,45 @@ fun SlidableNavHost(
                 ?: backStack.lastOrNull { entry -> target == entry.id }
             val lastThingOnBackstack = backStack.dropLast(1).firstOrNull()
 
-            SlidableContainer(
-                enabled = lastThingOnBackstack != null,
-                background = {
-                    lastThingOnBackstack?.LocalOwnersProvider(saveableStateHolder) {
-                        (lastThingOnBackstack.destination as SlidableComposeNavigator.Destination).content(lastThingOnBackstack)
-                    }
-                },
-                foreground = {
-                    lastEntry?.LocalOwnersProvider(saveableStateHolder) {
-                        (lastEntry.destination as SlidableComposeNavigator.Destination).content(lastEntry)
-                    }
-                },
-                onDismiss = navController::popBackStack,
-            )
+//            if (transitionInProgress) {
+//
+//                lastThingOnBackstack?.let {
+//
+//                    SlidableContainer(
+//                        enabled = false,
+//                        background = {
+//
+//                        },
+//                        foreground = {
+//                            lastThingOnBackstack?.LocalOwnersProvider(saveableStateHolder) {
+//                                Log.d("jakub",
+//                                    "SlidableNavHost background: ${lastThingOnBackstack.id} - ${lastThingOnBackstack.destination.route}")
+//                                (lastThingOnBackstack.destination as SlidableComposeNavigator.Destination).content(lastThingOnBackstack)
+//                            }
+//                        },
+//                        onDismiss = navController::popBackStack,
+//                    )
+//                }
+//
+//            }
+//
+//            SlidableContainer(
+//                transitionInProgress = { transitionInProgress = it },
+//                enabled = lastThingOnBackstack != null,
+//                background = {
+////                    lastThingOnBackstack?.LocalOwnersProvider(saveableStateHolder) {
+////                        (lastThingOnBackstack.destination as SlidableComposeNavigator.Destination).content(lastThingOnBackstack)
+////                    }
+//                },
+//                foreground = {
+//                    lastEntry?.LocalOwnersProvider(saveableStateHolder) {
+//                        Log.d("jakub", "SlidableNavHost: ${lastEntry.id} - ${lastEntry.destination.route}")
+//                        (lastEntry.destination as SlidableComposeNavigator.Destination).content(lastEntry)
+//                    }
+//                },
+//                onDismiss = navController::popBackStack,
+//            )
+
 
             DisposableEffect(lastEntry) {
                 if (initialCrossfade) {

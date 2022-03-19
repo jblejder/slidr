@@ -4,14 +4,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallTopAppBar
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,6 +28,7 @@ internal fun DetailsView(navController: NavHostController, sdkInt: Int) {
     val item = remember { loadData(resources).first { it.sdkInt == sdkInt } }
 
     Scaffold(
+        Modifier.layoutId("ListView ${counter++}"),
         topBar = { SmallTopAppBar(title = { Text(text = item.name.orEmpty()) }) },
         content = { padding ->
             Column(
@@ -48,6 +46,11 @@ internal fun DetailsView(navController: NavHostController, sdkInt: Int) {
                         text = item.description,
                         style = MaterialTheme.typography.bodySmall,
                     )
+                }
+                Button(onClick = {
+                    navController.navigate("details/${item.sdkInt}")
+                }) {
+                    Text(text = "ja chce jeszcze raz!")
                 }
             }
         },
